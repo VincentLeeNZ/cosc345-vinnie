@@ -1,23 +1,19 @@
 #include "Portfolio.h"
 #include <iostream>
 
-// Portfolio.cpp
-
 void Portfolio::addPurchase(Purchase purchase)
 {
     Purchase *existingPurchase = getPurchase(purchase.getStockSymbol());
 
     if (existingPurchase)
     {
-        // Merge with existing purchase
+
         existingPurchase->setQuantity(existingPurchase->getQuantity() + purchase.getQuantity());
         existingPurchase->updatePurchasePrice(purchase.getStock.getPrice());
-
-        // Other calculations and updates can be performed here if needed
     }
     else
     {
-        // Add a new purchase
+
         purchases.push_back(purchase);
     }
 }
@@ -41,12 +37,10 @@ Purchase *Portfolio::getPurchase(const std::string &stockSymbol)
             return &purchase;
         }
     }
-    return nullptr; // Return nullptr if purchase with the given stock symbol is not found
+    return nullptr;
 }
 
 const std::vector<Purchase> Portfolio::getPurchases() const
 {
     return purchases;
 }
-
-// Portfolio.cpp
