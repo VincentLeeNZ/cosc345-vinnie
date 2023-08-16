@@ -4,18 +4,87 @@
 #include <sstream>
 #include <iostream>
 #include <ctime>
-#include <cstring>
+#include <string>
 
 // ChatGPTed
 
-Stock::Stock(const std::string& symbol, const std::string& name, int outstanding, int ipoYear, const std::string& sector, const std::string& industry)
+Stock::Stock(const std::string &symbol, const std::string &name, int outstanding, int ipoYear, const std::string &sector, const std::string &industry)
     : symbol(symbol), name(name), outstanding(outstanding), ipoYear(ipoYear), sector(sector), industry(industry) {}
 
-std::vector<Stock> parseCSV(const std::string& filename) {
+// Getters
+std::string Stock::getSymbol() const
+{
+    return symbol;
+}
+
+std::string Stock::getName() const
+{
+    return name;
+}
+
+int Stock::getOutstanding() const
+{
+    return outstanding;
+}
+
+int Stock::getIpoYear() const
+{
+    return ipoYear;
+}
+
+std::string Stock::getSector() const
+{
+    return sector;
+}
+
+std::string Stock::getIndustry() const
+{
+    return industry;
+}
+
+// Setters
+
+void Stock::setPrice(double price)
+{
+    purchasePrice = price;
+}
+void Stock::setSymbol(const std::string &symbol)
+{
+    this->symbol = symbol;
+}
+
+void Stock::setName(const std::string &name)
+{
+    this->name = name;
+}
+
+void Stock::setOutstanding(int outstanding)
+{
+    this->outstanding = outstanding;
+}
+
+void Stock::setIpoYear(int ipoYear)
+{
+    this->ipoYear = ipoYear;
+}
+
+void Stock::setSector(const std::string &sector)
+{
+    this->sector = sector;
+}
+
+void Stock::setIndustry(const std::string &industry)
+{
+    this->industry = industry;
+}
+
+std::vector<Stock> parseCSV(const std::string &filename)
+{
     std::vector<Stock> stocks;
     std::ifstream file(filename);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Failed to open the file: " << filename << std::endl;
         return stocks;
     }
@@ -24,7 +93,8 @@ std::vector<Stock> parseCSV(const std::string& filename) {
     // Skip the header line
     std::getline(file, line);
 
-    while (std::getline(file, line)) {
+    while (std::getline(file, line))
+    {
         std::stringstream ss(line);
         std::string token;
 
@@ -33,16 +103,24 @@ std::vector<Stock> parseCSV(const std::string& filename) {
 
         std::getline(ss, symbol, ',');
         std::getline(ss, name, ',');
-        
-        try {
+
+        try
+        {
             std::getline(ss, token, ',');
             outstanding = std::stoi(token);
-        } catch (const std::exception& e) {}
+        }
+        catch (const std::exception &e)
+        {
+        }
 
-        try {
+        try
+        {
             std::getline(ss, token, ',');
             ipoYear = std::stoi(token);
-        } catch (const std::exception& e) {}
+        }
+        catch (const std::exception &e)
+        {
+        }
 
         std::getline(ss, sector, ',');
         std::getline(ss, industry, ',');
@@ -54,11 +132,30 @@ std::vector<Stock> parseCSV(const std::string& filename) {
     return stocks;
 }
 
-void Stock::parseHistory() {
+// double Stock::getPurchasePrice() const
+// {
+//     return purchasePrice;
+// }
+
+double Stock::getPriceAtDate(const std::string &date) const
+{
+    for (const StockHistory &entry : history)
+    {
+        if (entry.date == date)
+        {
+            return entry.closePrice;
+        }
+    }
+    return -1.0;
+}
+
+void Stock::parseHistory()
+{
     std::string filename = "data/stocks/" + symbol + ".csv";
     std::ifstream file(filename);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Failed to open the history file: " << filename << std::endl;
         return;
     }
@@ -67,7 +164,8 @@ void Stock::parseHistory() {
     // Skip the header line
     std::getline(file, line);
 
-    while (std::getline(file, line)) {
+    while (std::getline(file, line))
+    {
         std::stringstream ss(line);
         StockHistory entry;
 
@@ -82,11 +180,15 @@ void Stock::parseHistory() {
     file.close();
 }
 
-std::string getNextDate(const std::string& date) {
-    struct tm tm;
-    memset(&tm, 0, sizeof(tm)); // Initialize the tm structure to zero
+std::string getNextDate(const std::string &date)
+{
+    struct tm tm = {};
+    sscanf(date.c_str(), "%d-%d-%d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday);
 
-    strptime(date.c_str(), "%Y-%m-%d", &tm);
+    // Adjust for tm's year (years since 1900) and month (0-11) representation
+    tm.tm_year -= 1900;
+    tm.tm_mon -= 1;
+
     tm.tm_mday += 7; // add 7 days for weekly data
 
     mktime(&tm); // Normalize the tm structure
@@ -96,16 +198,19 @@ std::string getNextDate(const std::string& date) {
     return std::string(buffer);
 }
 
-void Stock::predictNextX(int x) {
+void Stock::predictNextX(int x)
+{
     int n = history.size();
-    if (n < 2) {
+    if (n < 2)
+    {
         std::cerr << "Not enough data to predict." << std::endl;
         return;
     }
 
     // Simple linear regression
     double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         sumX += i;
         sumY += history[i].closePrice;
         sumXY += i * history[i].closePrice;
@@ -115,7 +220,8 @@ void Stock::predictNextX(int x) {
     double slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     double intercept = (sumY - slope * sumX) / n;
 
-    for (int i = 0; i < x; i++) {
+    for (int i = 0; i < x; i++)
+    {
         std::string nextDate = getNextDate(history.back().date);
         double predictedPrice = slope * (n + i) + intercept;
 
@@ -125,10 +231,17 @@ void Stock::predictNextX(int x) {
 
         // Generate headline and adjust price
         auto headlineEvent = Headline::generateHeadline(*this, n + i);
+        if (headlineEvent.first != "")
+        {
+            std::cout << headlineEvent.first << std::endl;
+        }
+
         predictedPrice *= headlineEvent.second;
 
         // Ensure the price doesn't go negative
         predictedPrice = std::max(predictedPrice, 0.01);
+
+        purchasePrice = predictedPrice;
 
         history.push_back({nextDate, predictedPrice});
     }

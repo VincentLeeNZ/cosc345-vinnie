@@ -1,12 +1,18 @@
-#ifndef APP_H
-#define APP_H
+#ifndef TESTSTOCKS_H
+#define TESTSTOCKS_H
 
-// TEMPORARY TEST APP 
+#include "Stock.h"
+#include <vector>
 
-class testStocks {
+class testStocks
+{
 public:
     testStocks();
     void run();
+
+private:
 };
 
-#endif // APP_H
+#endif //
+
+TESTSTOCKS_H
